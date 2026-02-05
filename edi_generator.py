@@ -304,7 +304,7 @@ def build_envelope(builder, sender_id, receiver_id, txn_type,
 
 def generate_837p(num_claims=None):
     """Generate a professional health care claim (837P)."""
-    num_claims = num_claims or random.randint(1, 3)
+    num_claims = num_claims or random.randint(3, 10)
 
     submitter_name = random.choice(FACILITY_NAMES)
     payer_name, payer_id = random.choice(PAYER_NAMES)
@@ -421,7 +421,7 @@ def generate_837p(num_claims=None):
 
 def generate_835(num_claims=None):
     """Generate a remittance advice (835)."""
-    num_claims = num_claims or random.randint(2, 5)
+    num_claims = num_claims or random.randint(5, 15)
 
     payer_name, payer_id = random.choice(PAYER_NAMES)
     payer_addr = random.choice(ADDRESSES)
@@ -528,14 +528,15 @@ def generate_835(num_claims=None):
 # ---------------------------------------------------------------------------
 
 def generate_270(num_claims=None):
-    """Generate an eligibility inquiry (270)."""
-    patient = random.choice(PATIENT_NAMES)
+    """Generate eligibility inquiries (270) for multiple subscribers."""
+    num_subscribers = num_claims or random.randint(3, 10)
+
     payer_name, payer_id = random.choice(PAYER_NAMES)
-    provider = random.choice(PROVIDER_NAMES)
     facility = random.choice(FACILITY_NAMES)
     provider_npi = npi()
 
     segments = []
+    hl_id = 0
 
     # BHT - Beginning of Hierarchical Transaction
     segments.append(("BHT", "0022", "13",
@@ -543,25 +544,54 @@ def generate_270(num_claims=None):
                      date_str(), time_str()))
 
     # HL - Information Source (Payer)
-    segments.append(("HL", "1", "", "20", "1"))
+    hl_id += 1
+    payer_hl = hl_id
+    segments.append(("HL", str(hl_id), "", "20", "1"))
     segments.append(("NM1", "PR", "2", payer_name, "", "", "", "", "PI", payer_id))
 
     # HL - Information Receiver (Provider)
-    segments.append(("HL", "2", "1", "21", "1"))
+    hl_id += 1
+    provider_hl = hl_id
+    segments.append(("HL", str(hl_id), str(payer_hl), "21", "1"))
     segments.append(("NM1", "1P", "2", facility, "", "", "", "", "XX", provider_npi))
     segments.append(("REF", "EI", tax_id()))
 
-    # HL - Subscriber
-    segments.append(("HL", "3", "2", "22", "0"))
-    trace_num = "".join(random.choices(string.digits, k=12))
-    segments.append(("TRN", "1", trace_num, "9" + payer_id))
-    segments.append(("NM1", "IL", "1", patient[0], patient[1], patient[2],
-                     "", "", "MI", member_id()))
-    segments.append(("DMG", "D8", patient[4]))
-    segments.append(("DTP", "291", "D8", date_str()))
+    # Service type codes to inquire about
+    service_type_pool = [
+        "30",   # Health Benefit Plan Coverage
+        "1",    # Medical Care
+        "33",   # Chiropractic
+        "35",   # Dental Care
+        "47",   # Hospital
+        "86",   # Emergency Services
+        "88",   # Pharmacy
+        "98",   # Professional (Physician) Visit - Office
+        "AL",   # Vision (Optometry)
+        "MH",   # Mental Health
+        "UC",   # Urgent Care
+        "AJ",   # Alcoholism
+        "AK",   # Drug Addiction
+        "A6",   # Psychiatric
+    ]
 
-    # EQ - Eligibility/Benefit Inquiry (30 = Health Benefit Plan Coverage)
-    segments.append(("EQ", "30"))
+    # Multiple subscriber inquiries
+    for _ in range(num_subscribers):
+        patient = random.choice(PATIENT_NAMES)
+        hl_id += 1
+
+        segments.append(("HL", str(hl_id), str(provider_hl), "22", "0"))
+        trace_num = "".join(random.choices(string.digits, k=12))
+        segments.append(("TRN", "1", trace_num, "9" + payer_id))
+        segments.append(("NM1", "IL", "1", patient[0], patient[1], patient[2],
+                         "", "", "MI", member_id()))
+        segments.append(("DMG", "D8", patient[4]))
+        svc_date = datetime.now() - timedelta(days=random.randint(0, 14))
+        segments.append(("DTP", "291", "D8", date_str(svc_date)))
+
+        # Inquire about 1-4 service types per subscriber
+        num_eq = random.randint(1, 4)
+        for svc_code in random.sample(service_type_pool, num_eq):
+            segments.append(("EQ", svc_code))
 
     sender_id = facility.replace(" ", "")[:15]
     receiver_id = payer_name.replace(" ", "")[:15]
@@ -573,20 +603,42 @@ def generate_270(num_claims=None):
 # ---------------------------------------------------------------------------
 
 def generate_271(num_claims=None):
-    """Generate an eligibility response (271)."""
-    patient = random.choice(PATIENT_NAMES)
+    """Generate eligibility responses (271) for multiple subscribers."""
+    num_subscribers = num_claims or random.randint(3, 10)
+
     payer_name, payer_id = random.choice(PAYER_NAMES)
     facility = random.choice(FACILITY_NAMES)
     provider_npi = npi()
-    patient_addr = random.choice(ADDRESSES)
-    pat_member = member_id()
 
-    plan_name = random.choice([
+    plan_names = [
         "WC PREFERRED PLAN", "WORKERS COMP STANDARD",
         "WC MANAGED CARE GOLD", "EMPLOYERS WC PLAN A",
-    ])
+        "WC COMPREHENSIVE", "WC SELECT NETWORK",
+    ]
+
+    # Benefit detail templates - service types and their typical benefit info
+    benefit_details = [
+        # (service_type_code, description, info_type, amount_qualifier, amount)
+        ("1",  "Medical Care",      "B", "27", None),   # copay varies
+        ("33", "Chiropractic",      "B", "27", None),
+        ("35", "Dental Care",       "B", "27", None),
+        ("47", "Hospital",          "B", "29", None),   # percentage
+        ("86", "Emergency",         "B", "27", None),
+        ("88", "Pharmacy",          "B", "27", None),
+        ("98", "Physician Visit",   "B", "27", None),
+        ("AL", "Vision",            "B", "27", None),
+        ("MH", "Mental Health",     "B", "27", None),
+        ("UC", "Urgent Care",       "B", "27", None),
+        ("A4", "Psychiatric",       "B", "27", None),
+        ("A6", "Psychotherapy",     "B", "27", None),
+        ("AJ", "Alcoholism",        "F", "",   None),   # deductible
+        ("AK", "Drug Addiction",    "F", "",   None),
+        ("PT", "Physical Therapy",  "B", "27", None),
+        ("OT", "Occupational Therapy", "B", "27", None),
+    ]
 
     segments = []
+    hl_id = 0
 
     # BHT
     segments.append(("BHT", "0022", "11",
@@ -594,40 +646,89 @@ def generate_271(num_claims=None):
                      date_str(), time_str()))
 
     # HL - Information Source (Payer)
-    segments.append(("HL", "1", "", "20", "1"))
+    hl_id += 1
+    payer_hl = hl_id
+    segments.append(("HL", str(hl_id), "", "20", "1"))
     segments.append(("NM1", "PR", "2", payer_name, "", "", "", "", "PI", payer_id))
 
     # HL - Information Receiver (Provider)
-    segments.append(("HL", "2", "1", "21", "1"))
+    hl_id += 1
+    provider_hl = hl_id
+    segments.append(("HL", str(hl_id), str(payer_hl), "21", "1"))
     segments.append(("NM1", "1P", "2", facility, "", "", "", "", "XX", provider_npi))
 
-    # HL - Subscriber
-    segments.append(("HL", "3", "2", "22", "0"))
-    trace_num = "".join(random.choices(string.digits, k=12))
-    segments.append(("TRN", "2", trace_num, "9" + payer_id))
+    for _ in range(num_subscribers):
+        patient = random.choice(PATIENT_NAMES)
+        patient_addr = random.choice(ADDRESSES)
+        pat_member = member_id()
+        plan_name = random.choice(plan_names)
 
-    # NM1 - Subscriber
-    segments.append(("NM1", "IL", "1", patient[0], patient[1], patient[2],
-                     "", "", "MI", pat_member))
-    segments.append(("N3", patient_addr[0]))
-    segments.append(("N4", patient_addr[1], patient_addr[2], patient_addr[3]))
-    segments.append(("DMG", "D8", patient[4], patient[3]))
+        hl_id += 1
+        segments.append(("HL", str(hl_id), str(provider_hl), "22", "0"))
+        trace_num = "".join(random.choices(string.digits, k=12))
+        segments.append(("TRN", "2", trace_num, "9" + payer_id))
 
-    # DTP - Plan Date
-    eff_date = datetime.now() - timedelta(days=random.randint(30, 365))
-    segments.append(("DTP", "346", "D8", date_str(eff_date)))
+        # NM1 - Subscriber
+        segments.append(("NM1", "IL", "1", patient[0], patient[1], patient[2],
+                         "", "", "MI", pat_member))
+        segments.append(("N3", patient_addr[0]))
+        segments.append(("N4", patient_addr[1], patient_addr[2], patient_addr[3]))
+        segments.append(("DMG", "D8", patient[4], patient[3]))
 
-    # EB - Eligibility/Benefit Information
-    # 1 = Active Coverage, L = Limitations
-    segments.append(("EB", "1", "", "30", "", plan_name))
-    segments.append(("EB", "L"))
+        # INS - Subscriber Relationship
+        segments.append(("INS", "Y", "18", "", "", "A"))
 
-    # EB - Covered services
-    segments.append(("EB", "1", "", "1^33^35^47^86^88^98^AL^MH^UC"))
-    # EB - Copay info
-    copay = random.choice([10, 15, 20, 25, 30])
-    segments.append(("EB", "B", "", "1^33^35^47^86^88^98^AL^MH^UC",
-                     "HM", plan_name, "27", str(copay), "", "", "", "", "Y"))
+        # DTP - Plan dates
+        eff_date = datetime.now() - timedelta(days=random.randint(30, 730))
+        segments.append(("DTP", "346", "D8", date_str(eff_date)))
+
+        # Randomly decide if subscriber is active or inactive
+        is_active = random.random() < 0.85  # 85% active
+
+        if is_active:
+            # EB - Active coverage
+            segments.append(("EB", "1", "", "30", "", plan_name))
+
+            # EB - Individual benefits for several service types
+            num_benefits = random.randint(4, 10)
+            selected_benefits = random.sample(benefit_details, num_benefits)
+            all_svc_codes = "^".join(b[0] for b in selected_benefits)
+
+            # EB - Covered services list
+            segments.append(("EB", "1", "", all_svc_codes))
+
+            for svc_code, svc_desc, info_type, amt_qual, _ in selected_benefits:
+                copay = random.choice([10, 15, 20, 25, 30, 35, 40, 50])
+                if info_type == "B":  # Co-Payment
+                    segments.append(("EB", "B", "IND", svc_code,
+                                     "HM", plan_name, amt_qual, str(copay),
+                                     "", "", "", "", "Y"))
+                elif info_type == "F":  # Limitations
+                    segments.append(("EB", "F", "IND", svc_code,
+                                     "HM", plan_name))
+
+                # Add per-visit/per-year limits for therapy types
+                if svc_code in ("PT", "OT", "33"):
+                    max_visits = random.choice([12, 20, 24, 30, 36, 52, 60])
+                    segments.append(("EB", "F", "IND", svc_code,
+                                     "HM", plan_name, "27", "",
+                                     "", str(max_visits), "23"))
+
+            # EB - Out-of-pocket maximum
+            oop_max = random.choice([2000, 3000, 4000, 5000, 6000])
+            segments.append(("EB", "G", "IND", "30", "HM", plan_name,
+                             "29", str(oop_max)))
+
+            # EB - Deductible
+            deductible = random.choice([0, 250, 500, 750, 1000])
+            if deductible > 0:
+                segments.append(("EB", "C", "IND", "30", "HM", plan_name,
+                                 "29", str(deductible)))
+        else:
+            # EB - Inactive coverage
+            segments.append(("EB", "6", "", "30", "", plan_name))
+            term_date = datetime.now() - timedelta(days=random.randint(1, 180))
+            segments.append(("DTP", "347", "D8", date_str(term_date)))
 
     sender_id = payer_name.replace(" ", "")[:15]
     receiver_id = facility.replace(" ", "")[:15]
@@ -639,73 +740,106 @@ def generate_271(num_claims=None):
 # ---------------------------------------------------------------------------
 
 def generate_278(num_claims=None):
-    """Generate an authorization request (278)."""
-    patient = random.choice(PATIENT_NAMES)
+    """Generate authorization requests (278) for multiple patients."""
+    num_requests = num_claims or random.randint(3, 8)
+
     payer_name, payer_id = random.choice(PAYER_NAMES)
     mco_name, mco_code, mco_npi = random.choice(MANAGED_CARE_ORGS)
-    provider = random.choice(PROVIDER_NAMES)
     facility = random.choice(FACILITY_NAMES)
-    provider_npi = npi()
-    svc_type_code, svc_type_name, default_qty = random.choice(AUTH_SERVICE_TYPES)
-    diag = random.choice(ICD10_CODES)
+
+    # Review types: HS=Health Services, SC=Specialty Care, AR=Admission Review
+    review_types = ["HS", "SC", "AR"]
+    # Certification types: I=Initial, R=Renewal/Recertification, E=Extension
+    cert_types = ["I", "I", "I", "R", "E"]
 
     segments = []
+    hl_id = 0
 
     # BHT - Beginning of Hierarchical Transaction
-    # 01 = Certification, 13 = Request
     segments.append(("BHT", "0007", "13",
                      "".join(random.choices(string.digits, k=10)),
                      date_str(), time_str()))
 
     # HL - Utilization Management Organization (Payer/MCO)
-    segments.append(("HL", "1", "", "20", "1"))
+    hl_id += 1
+    mco_hl = hl_id
+    segments.append(("HL", str(hl_id), "", "20", "1"))
     segments.append(("NM1", "X3", "2", mco_name, "", "", "", "", "46", mco_code))
 
-    # HL - Requester (Provider)
-    segments.append(("HL", "2", "1", "21", "1"))
-    segments.append(("NM1", "1P", "1", provider[0], provider[1], provider[2],
-                     "", "", "XX", provider_npi))
-    segments.append(("REF", "EI", tax_id()))
-    segments.append(("N3", random.choice(ADDRESSES)[0]))
-    addr = random.choice(ADDRESSES)
-    segments.append(("N4", addr[1], addr[2], addr[3]))
-    segments.append(("PER", "IC", f"{provider[1]} {provider[0]}", "TE",
-                     f"555{random.randint(1000000,9999999)}"))
+    for _ in range(num_requests):
+        patient = random.choice(PATIENT_NAMES)
+        provider = random.choice(PROVIDER_NAMES)
+        provider_npi_val = npi()
+        addr = random.choice(ADDRESSES)
+        svc_type_code, svc_type_name, default_qty = random.choice(AUTH_SERVICE_TYPES)
 
-    # HL - Subscriber
-    segments.append(("HL", "3", "2", "22", "1"))
-    pat_member = member_id()
-    segments.append(("NM1", "IL", "1", patient[0], patient[1], patient[2],
-                     "", "", "MI", pat_member))
-    segments.append(("DMG", "D8", patient[4], patient[3]))
+        # HL - Requester (Provider) — each request may come from a different provider
+        hl_id += 1
+        req_hl = hl_id
+        segments.append(("HL", str(hl_id), str(mco_hl), "21", "1"))
+        segments.append(("NM1", "1P", "1", provider[0], provider[1], provider[2],
+                         "", "", "XX", provider_npi_val))
+        segments.append(("REF", "EI", tax_id()))
+        segments.append(("N3", addr[0]))
+        segments.append(("N4", addr[1], addr[2], addr[3]))
+        segments.append(("PER", "IC", f"{provider[1]} {provider[0]}", "TE",
+                         f"555{random.randint(1000000,9999999)}"))
 
-    # Payer name within subscriber loop
-    segments.append(("NM1", "PR", "2", payer_name, "", "", "", "", "PI", payer_id))
+        # HL - Subscriber
+        hl_id += 1
+        sub_hl = hl_id
+        pat_member = member_id()
+        patient_addr = random.choice(ADDRESSES)
+        segments.append(("HL", str(hl_id), str(req_hl), "22", "1"))
+        segments.append(("NM1", "IL", "1", patient[0], patient[1], patient[2],
+                         "", "", "MI", pat_member))
+        segments.append(("N3", patient_addr[0]))
+        segments.append(("N4", patient_addr[1], patient_addr[2], patient_addr[3]))
+        segments.append(("DMG", "D8", patient[4], patient[3]))
 
-    # HL - Patient Event
-    segments.append(("HL", "4", "3", "EV", "0"))
+        # Payer
+        segments.append(("NM1", "PR", "2", payer_name, "", "", "", "", "PI", payer_id))
 
-    # UM - Health Care Services Review Information
-    # 01 = Scheduled, HS = Health Services Review, I = Initial
-    num_visits = random.randint(4, 24)
-    req_start = datetime.now() + timedelta(days=random.randint(1, 14))
-    req_end = req_start + timedelta(days=random.randint(30, 90))
-    segments.append(("UM", "HS", "I", "", "11"))
+        # HL - Patient Event
+        hl_id += 1
+        segments.append(("HL", str(hl_id), str(sub_hl), "EV", "0"))
 
-    # HI - Diagnosis
-    segments.append(("HI", "BK:" + diag[0]))
+        # UM - Health Care Services Review Information
+        review_type = random.choice(review_types)
+        cert_type = random.choice(cert_types)
+        pos_code = random.choice(PLACE_OF_SERVICE)[0]
+        segments.append(("UM", review_type, cert_type, "", pos_code))
 
-    # HSD - Health Care Services Delivery (requested visits/units)
-    segments.append(("HSD", "VS", str(num_visits), "DA",
-                     str((req_end - req_start).days), "7"))
+        # HI - Diagnosis (1-3 codes)
+        diag_codes = random.sample(ICD10_CODES, random.randint(1, 3))
+        hi_elements = ["BK:" + diag_codes[0][0]]
+        for code, desc in diag_codes[1:]:
+            hi_elements.append("BF:" + code)
+        segments.append(("HI", *hi_elements))
 
-    # DTP - Certification effective date range
-    segments.append(("DTP", "472", "RD8",
-                     date_str(req_start) + "-" + date_str(req_end)))
+        # HSD - Requested visits/units
+        num_visits = random.randint(4, 36)
+        req_start = datetime.now() + timedelta(days=random.randint(1, 14))
+        req_end = req_start + timedelta(days=random.randint(30, 120))
+        segments.append(("HSD", "VS", str(num_visits), "DA",
+                         str((req_end - req_start).days), "7"))
 
-    # SV1 - Service Information (the procedure being requested)
-    proc = random.choice(PROCEDURE_CODES)
-    segments.append(("SV1", f"HC:{proc[0]}", f"{proc[2]:.2f}", "UN", "1"))
+        # DTP - Certification effective date range
+        segments.append(("DTP", "472", "RD8",
+                         date_str(req_start) + "-" + date_str(req_end)))
+
+        # REF - Previous authorization number (for renewals/extensions)
+        if cert_type in ("R", "E"):
+            prev_auth = "AUTH" + "".join(random.choices(string.digits, k=8))
+            segments.append(("REF", "BB", prev_auth))
+
+        # SV1 - Service lines (1-3 procedures per request)
+        num_svc = random.randint(1, 3)
+        procedures = random.sample(PROCEDURE_CODES, num_svc)
+        for proc_cpt, proc_desc, proc_price in procedures:
+            qty = random.randint(1, num_visits)
+            segments.append(("SV1", f"HC:{proc_cpt}", f"{proc_price:.2f}",
+                             "UN", str(qty)))
 
     sender_id = facility.replace(" ", "")[:15]
     receiver_id = mco_name.replace(" ", "")[:15]
@@ -717,31 +851,94 @@ def generate_278(num_claims=None):
 # ---------------------------------------------------------------------------
 
 def generate_999(num_claims=None):
-    """Generate an implementation acknowledgment (999)."""
+    """Generate implementation acknowledgments (999) for multiple transaction sets."""
+    num_txns = num_claims or random.randint(5, 15)
+
     sender = random.choice(PAYER_NAMES)
     receiver_facility = random.choice(FACILITY_NAMES)
     orig_gs_control = control_number(4)
-    orig_st_control = control_number(4).zfill(4)
 
-    # Acknowledge a random healthcare transaction
+    # Acknowledge a random healthcare transaction type
     ack_txn = random.choice(["837", "835", "270", "278"])
     func_code = {"837": "HC", "835": "HP", "270": "HS", "278": "HI"}[ack_txn]
+    version_map = {
+        "837": "005010X222A1", "835": "005010X221A1",
+        "270": "005010X279A1", "278": "005010X217",
+    }
+    gs_version = version_map[ack_txn]
+
+    # Error codes for rejected segments (IK3/IK4)
+    seg_error_codes = [
+        ("1", "Unrecognized segment ID"),
+        ("2", "Unexpected segment"),
+        ("3", "Mandatory segment missing"),
+        ("5", "Segment exceeds maximum use"),
+        ("8", "Segment has data element errors"),
+    ]
+    elem_error_codes = [
+        ("1", "Mandatory data element missing"),
+        ("2", "Conditional required data element missing"),
+        ("4", "Data element too short"),
+        ("5", "Data element too long"),
+        ("6", "Invalid character in data element"),
+        ("7", "Invalid code value"),
+    ]
 
     segments = []
 
     # AK1 - Functional Group Response Header
-    segments.append(("AK1", func_code, orig_gs_control, "005010X222A1"))
+    segments.append(("AK1", func_code, orig_gs_control, gs_version))
 
-    # AK2 - Transaction Set Response Header
-    segments.append(("AK2", ack_txn, orig_st_control, "005010X222A1"))
+    accepted = 0
+    rejected = 0
 
-    # IK5 - Transaction Set Response Trailer (999-specific)
-    # A = Accepted, E = Accepted with Errors, R = Rejected
-    status = random.choice(["A", "A", "A", "A", "E"])
-    segments.append(("IK5", status))
+    for i in range(num_txns):
+        st_control = control_number(4).zfill(4)
+
+        # AK2 - Transaction Set Response Header
+        segments.append(("AK2", ack_txn, st_control, gs_version))
+
+        # Randomly decide status: ~70% accepted, ~15% accepted w/ errors, ~15% rejected
+        roll = random.random()
+        if roll < 0.70:
+            status = "A"  # Accepted
+            accepted += 1
+        elif roll < 0.85:
+            status = "E"  # Accepted with Errors
+            accepted += 1
+            # Add 1-2 segment error notes
+            for _ in range(random.randint(1, 2)):
+                seg_pos = random.randint(3, 25)
+                seg_id = random.choice(["NM1", "CLM", "SV1", "DTP", "REF",
+                                        "SBR", "DMG", "HI", "HL", "CLP"])
+                err_code, err_desc = random.choice(seg_error_codes)
+                segments.append(("IK3", seg_id, str(seg_pos), "", err_code))
+                # IK4 - element-level error detail
+                elem_pos = random.randint(1, 10)
+                e_code, e_desc = random.choice(elem_error_codes)
+                segments.append(("IK4", str(elem_pos), "", "", e_code))
+        else:
+            status = "R"  # Rejected
+            rejected += 1
+            # Add 2-4 error notes for rejected transactions
+            for _ in range(random.randint(2, 4)):
+                seg_pos = random.randint(3, 30)
+                seg_id = random.choice(["NM1", "CLM", "SV1", "DTP", "REF",
+                                        "SBR", "DMG", "HI", "HL", "CLP",
+                                        "N3", "N4", "PER", "BHT"])
+                err_code, err_desc = random.choice(seg_error_codes)
+                segments.append(("IK3", seg_id, str(seg_pos), "", err_code))
+                elem_pos = random.randint(1, 12)
+                e_code, e_desc = random.choice(elem_error_codes)
+                segments.append(("IK4", str(elem_pos), "", "", e_code))
+
+        # IK5 - Transaction Set Response Trailer
+        segments.append(("IK5", status))
 
     # AK9 - Functional Group Response Trailer
-    segments.append(("AK9", "A", "1", "1", "1"))
+    total = accepted + rejected
+    group_status = "A" if rejected == 0 else ("P" if accepted > 0 else "R")
+    segments.append(("AK9", group_status, str(total), str(total), str(accepted)))
 
     sender_id = sender[0].replace(" ", "")[:15]
     receiver_id = receiver_facility.replace(" ", "")[:15]
