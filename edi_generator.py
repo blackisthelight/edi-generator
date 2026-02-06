@@ -118,27 +118,95 @@ FACILITY_NAMES = [
     "HARBOR OCCUPATIONAL HEALTH",
 ]
 
-PATIENT_NAMES = [
-    ("THOMPSON", "WILLIAM", "A", "M", "19780315"),
-    ("MARTINEZ", "SARAH", "L", "F", "19850622"),
-    ("ANDERSON", "JOHN", "R", "M", "19700108"),
-    ("TAYLOR", "ELIZABETH", "M", "F", "19920417"),
-    ("THOMAS", "RICHARD", "D", "M", "19650930"),
-    ("JACKSON", "MICHELLE", "K", "F", "19880211"),
-    ("WHITE", "CHRISTOPHER", "J", "M", "19750820"),
-    ("HARRIS", "AMANDA", "S", "F", "19830714"),
+LAST_NAMES = [
+    "THOMPSON", "MARTINEZ", "ANDERSON", "TAYLOR", "THOMAS", "JACKSON",
+    "WHITE", "HARRIS", "ROBINSON", "CLARK", "LEWIS", "WALKER", "HALL",
+    "ALLEN", "YOUNG", "KING", "WRIGHT", "LOPEZ", "HILL", "SCOTT",
+    "GREEN", "ADAMS", "BAKER", "NELSON", "CARTER", "MITCHELL", "PEREZ",
+    "ROBERTS", "TURNER", "PHILLIPS", "CAMPBELL", "PARKER", "EVANS",
+    "EDWARDS", "COLLINS", "STEWART", "SANCHEZ", "MORRIS", "ROGERS",
+    "REED", "COOK", "MORGAN", "BELL", "MURPHY", "BAILEY", "RIVERA",
+    "COOPER", "RICHARDSON", "COX", "HOWARD",
 ]
 
-ADDRESSES = [
-    ("123 MAIN ST", "JACKSONVILLE", "FL", "32256"),
-    ("456 OAK AVE", "DALLAS", "TX", "75201"),
-    ("789 PINE RD", "COLUMBUS", "OH", "43215"),
-    ("321 ELM BLVD", "TAMPA", "FL", "33602"),
-    ("654 MAPLE DR", "PHOENIX", "AZ", "85004"),
-    ("987 CEDAR LN", "NASHVILLE", "TN", "37203"),
-    ("111 BIRCH CT", "DENVER", "CO", "80202"),
-    ("222 WALNUT ST", "PORTLAND", "OR", "97201"),
+FIRST_NAMES_M = [
+    "WILLIAM", "JOHN", "RICHARD", "CHRISTOPHER", "MICHAEL", "DAVID",
+    "JAMES", "ROBERT", "DANIEL", "JOSEPH", "THOMAS", "MARK", "STEVEN",
+    "PAUL", "KEVIN", "BRIAN", "GARY", "TIMOTHY", "RONALD", "EDWARD",
+    "JASON", "JEFFREY", "RYAN", "JACOB", "NICHOLAS", "ERIC", "STEPHEN",
+    "ANDREW", "RAYMOND", "GREGORY",
 ]
+
+FIRST_NAMES_F = [
+    "SARAH", "ELIZABETH", "MICHELLE", "AMANDA", "JENNIFER", "LINDA",
+    "PATRICIA", "MARIA", "NANCY", "KAREN", "LISA", "BETTY", "HELEN",
+    "SANDRA", "DONNA", "CAROL", "RUTH", "SHARON", "LAURA", "BARBARA",
+    "JESSICA", "ANGELA", "MELISSA", "STEPHANIE", "REBECCA", "DEBORAH",
+    "KATHLEEN", "DIANE", "CHRISTINE", "CATHERINE",
+]
+
+MIDDLE_INITIALS = list(string.ascii_uppercase)
+
+
+def random_patient():
+    """Generate a random patient with unique name, gender, and DOB.
+
+    Returns a tuple: (last, first, middle_initial, gender, dob_str)
+    matching the shape of the old PATIENT_NAMES entries.
+
+    With 50 last × 30 first × 26 middle = 39,000 unique combos per gender,
+    this scales to thousands of claims without significant collision.
+    """
+    gender = random.choice(("M", "F"))
+    first = random.choice(FIRST_NAMES_M if gender == "M" else FIRST_NAMES_F)
+    last = random.choice(LAST_NAMES)
+    middle = random.choice(MIDDLE_INITIALS)
+    # Random DOB between 1955 and 2000
+    year = random.randint(1955, 2000)
+    month = random.randint(1, 12)
+    day = random.randint(1, 28)  # 28 avoids month-length edge cases
+    dob = f"{year}{month:02d}{day:02d}"
+    return (last, first, middle, gender, dob)
+
+STREET_NAMES = [
+    "MAIN", "OAK", "PINE", "ELM", "MAPLE", "CEDAR", "BIRCH", "WALNUT",
+    "CHERRY", "WILLOW", "SPRUCE", "HICKORY", "POPLAR", "SYCAMORE",
+    "MAGNOLIA", "CHESTNUT", "LAUREL", "ASPEN", "CYPRESS", "JUNIPER",
+    "PARK", "LAKE", "RIVER", "HILL", "VALLEY", "RIDGE", "MEADOW",
+    "FOREST", "SPRING", "CREEK",
+]
+
+STREET_TYPES = ["ST", "AVE", "RD", "BLVD", "DR", "LN", "CT", "WAY", "PL", "CIR"]
+
+CITIES_STATES_ZIPS = [
+    ("JACKSONVILLE", "FL", "32256"), ("DALLAS", "TX", "75201"),
+    ("COLUMBUS", "OH", "43215"), ("TAMPA", "FL", "33602"),
+    ("PHOENIX", "AZ", "85004"), ("NASHVILLE", "TN", "37203"),
+    ("DENVER", "CO", "80202"), ("PORTLAND", "OR", "97201"),
+    ("ATLANTA", "GA", "30301"), ("CHARLOTTE", "NC", "28202"),
+    ("INDIANAPOLIS", "IN", "46204"), ("SAN ANTONIO", "TX", "78205"),
+    ("PITTSBURGH", "PA", "15222"), ("MINNEAPOLIS", "MN", "55401"),
+    ("MILWAUKEE", "WI", "53202"), ("KANSAS CITY", "MO", "64106"),
+    ("LOUISVILLE", "KY", "40202"), ("BIRMINGHAM", "AL", "35203"),
+    ("RICHMOND", "VA", "23219"), ("SALT LAKE CITY", "UT", "84101"),
+    ("OMAHA", "NE", "68102"), ("MEMPHIS", "TN", "38103"),
+    ("TULSA", "OK", "74103"), ("ALBUQUERQUE", "NM", "87102"),
+    ("BOISE", "ID", "83702"), ("RALEIGH", "NC", "27601"),
+    ("OAKLAND", "CA", "94612"), ("CLEVELAND", "OH", "44114"),
+    ("DETROIT", "MI", "48226"), ("SACRAMENTO", "CA", "95814"),
+]
+
+
+def random_address():
+    """Generate a random street address.
+
+    Returns a tuple: (street, city, state, zip) matching the old ADDRESSES shape.
+    30 street names × 10 types × 999 numbers × 30 cities = millions of combos.
+    """
+    num = random.randint(100, 9999)
+    street = f"{num} {random.choice(STREET_NAMES)} {random.choice(STREET_TYPES)}"
+    city, state, zip_code = random.choice(CITIES_STATES_ZIPS)
+    return (street, city, state, zip_code)
 
 # CPT / HCPCS codes common in workers' comp / managed care
 PROCEDURE_CODES = [
@@ -849,7 +917,7 @@ def generate_837p(num_claims=None):
     billing_provider = random.choice(active_provider_names)
     billing_npi = npi()
     billing_tin = tax_id()
-    billing_addr = random.choice(ADDRESSES)
+    billing_addr = random_address()
 
     hl_id = 1
     segments.append(("HL", str(hl_id), "", "20", "1"))
@@ -864,9 +932,9 @@ def generate_837p(num_claims=None):
     segments.append(("REF", "EI", billing_tin))
 
     for claim_num in range(num_claims):
-        patient = random.choice(PATIENT_NAMES)
+        patient = random_patient()
         patient_member_id = member_id()
-        patient_addr = random.choice(ADDRESSES)
+        patient_addr = random_address()
         pos_code, pos_name = random.choice(active_place_of_service)
 
         # -- Subscriber HL
@@ -944,7 +1012,7 @@ def generate_835(num_claims=None):
     num_claims = num_claims or random.randint(5, 15)
 
     payer_name, payer_id = random.choice(PAYER_NAMES)
-    payer_addr = random.choice(ADDRESSES)
+    payer_addr = random_address()
 
     segments = []
 
@@ -974,7 +1042,7 @@ def generate_835(num_claims=None):
     # -- Loop 1000B: Payee (Provider)
     payee_facility = random.choice(active_facility_names)
     payee_npi = npi()
-    payee_addr = random.choice(ADDRESSES)
+    payee_addr = random_address()
     segments.append(("N1", "PE", payee_facility, "XX", payee_npi))
     segments.append(("N3", payee_addr[0]))
     segments.append(("N4", payee_addr[1], payee_addr[2], payee_addr[3]))
@@ -982,7 +1050,7 @@ def generate_835(num_claims=None):
 
     # -- Claims (Loop 2100/2110)
     for _ in range(num_claims):
-        patient = random.choice(PATIENT_NAMES)
+        patient = random_patient()
         clm_ctrl = claim_id()
         num_lines = min(random.randint(1, 3), len(active_procedure_codes))
         procedures = random.sample(active_procedure_codes, num_lines)
@@ -1096,7 +1164,7 @@ def generate_270(num_claims=None):
 
     # Multiple subscriber inquiries
     for _ in range(num_subscribers):
-        patient = random.choice(PATIENT_NAMES)
+        patient = random_patient()
         hl_id += 1
 
         segments.append(("HL", str(hl_id), str(provider_hl), "22", "0"))
@@ -1178,8 +1246,8 @@ def generate_271(num_claims=None):
     segments.append(("NM1", "1P", "2", facility, "", "", "", "", "XX", provider_npi))
 
     for _ in range(num_subscribers):
-        patient = random.choice(PATIENT_NAMES)
-        patient_addr = random.choice(ADDRESSES)
+        patient = random_patient()
+        patient_addr = random_address()
         pat_member = member_id()
         plan_name = random.choice(plan_names)
 
@@ -1287,10 +1355,10 @@ def generate_278(num_claims=None):
     segments.append(("NM1", "X3", "2", mco_name, "", "", "", "", "46", mco_code))
 
     for _ in range(num_requests):
-        patient = random.choice(PATIENT_NAMES)
+        patient = random_patient()
         provider = random.choice(active_provider_names)
         provider_npi_val = npi()
-        addr = random.choice(ADDRESSES)
+        addr = random_address()
         svc_type_code, svc_type_name, default_qty = random.choice(active_auth_service_types)
 
         # HL - Requester (Provider) — each request may come from a different provider
@@ -1309,7 +1377,7 @@ def generate_278(num_claims=None):
         hl_id += 1
         sub_hl = hl_id
         pat_member = member_id()
-        patient_addr = random.choice(ADDRESSES)
+        patient_addr = random_address()
         segments.append(("HL", str(hl_id), str(req_hl), "22", "1"))
         segments.append(("NM1", "IL", "1", patient[0], patient[1], patient[2],
                          "", "", "MI", pat_member))
