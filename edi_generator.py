@@ -207,6 +207,525 @@ AUTH_SERVICE_TYPES = [
 
 
 # ---------------------------------------------------------------------------
+# One Call Care Management — Line of Business (LOB) profiles
+#
+# Each LOB constrains the CPT codes, provider types, facility names,
+# ICD-10 codes, and auth service types to those consistent with that
+# line of business.  Use --lob <name> to activate.
+#
+# LOBs based on One Call's service lines:
+#   PT        Physical Therapy (incl. aqua, hand therapy, work hardening)
+#   OT        Occupational Therapy
+#   DC        Chiropractic
+#   DX        Diagnostics (MRI, CT, X-ray, EMG/NCS, ultrasound)
+#   DME       Durable Medical Equipment
+#   HH        Home Health / Complex Care
+#   DENTAL    Dental
+#   TRANSPORT Transportation
+#   LANGUAGE  Language / Interpreter Services
+# ---------------------------------------------------------------------------
+
+LOB_PROFILES = {
+    "PT": {
+        "name": "Physical Therapy",
+        "procedure_codes": [
+            ("97110", "Therapeutic exercises", 42.00),
+            ("97140", "Manual therapy techniques", 45.00),
+            ("97530", "Therapeutic activities", 40.00),
+            ("97112", "Neuromuscular re-education", 44.00),
+            ("97035", "Ultrasound therapy", 25.00),
+            ("97010", "Hot/cold pack application", 15.00),
+            ("97150", "Group therapeutic procedures", 30.00),
+            ("97116", "Gait training therapy", 38.00),
+            ("97542", "Wheelchair management training", 42.00),
+            ("97760", "Orthotic management and training", 48.00),
+            ("97164", "PT re-evaluation", 85.00),
+            ("97161", "PT evaluation low complexity", 95.00),
+            ("97162", "PT evaluation moderate complexity", 115.00),
+            ("97163", "PT evaluation high complexity", 135.00),
+            ("97113", "Aquatic therapy", 48.00),
+            ("97542", "Wheelchair management", 42.00),
+            ("97750", "Physical performance test", 55.00),
+            ("97799", "Physical therapy service", 50.00),
+        ],
+        "provider_names": [
+            ("BROWN", "PATRICIA", "PT"),
+            ("CHEN", "DAVID", "PT"),
+            ("PATEL", "ANITA", "DPT"),
+            ("OCONNOR", "SEAN", "PT"),
+            ("RODRIGUEZ", "CARMEN", "DPT"),
+            ("LARSEN", "ERIK", "PT"),
+        ],
+        "facility_names": [
+            "COASTAL PHYSICAL THERAPY",
+            "PEAK PERFORMANCE REHABILITATION",
+            "PROGRESSIVE PT AND SPORTS REHAB",
+            "AQUATIC THERAPY CENTER",
+            "HAND AND UPPER EXTREMITY CLINIC",
+            "WORK HARDENING AND CONDITIONING CTR",
+            "TOTAL BODY REHABILITATION",
+            "PINNACLE PHYSICAL THERAPY",
+        ],
+        "icd10_codes": [
+            ("M5416", "Radiculopathy, lumbar region"),
+            ("M5412", "Radiculopathy, cervical region"),
+            ("S8350XA", "Sprain of knee, unspecified, initial"),
+            ("M7911", "Myalgia, right shoulder"),
+            ("S93401A", "Sprain of ankle, initial encounter"),
+            ("M75110", "Rotator cuff tear, right shoulder"),
+            ("M7010", "Bursitis of knee"),
+            ("S83511A", "Sprain of ACL of right knee, initial"),
+            ("M5136", "Intervertebral disc degeneration, lumbar"),
+            ("S46011A", "Strain of rotator cuff, right shoulder, initial"),
+            ("M79641", "Pain in right hand"),
+            ("S62009A", "Fracture of navicular bone of wrist, initial"),
+        ],
+        "auth_service_types": [
+            ("PT", "Physical Therapy", "3"),
+        ],
+        "place_of_service": [
+            ("11", "Office"),
+            ("49", "Independent Clinic"),
+        ],
+    },
+
+    "OT": {
+        "name": "Occupational Therapy",
+        "procedure_codes": [
+            ("97530", "Therapeutic activities", 40.00),
+            ("97110", "Therapeutic exercises", 42.00),
+            ("97140", "Manual therapy techniques", 45.00),
+            ("97535", "Self-care/home management training", 46.00),
+            ("97537", "Community/work reintegration", 48.00),
+            ("97542", "Wheelchair management training", 42.00),
+            ("97760", "Orthotic management and training", 48.00),
+            ("97167", "OT re-evaluation", 85.00),
+            ("97165", "OT evaluation low complexity", 95.00),
+            ("97166", "OT evaluation moderate complexity", 115.00),
+            ("97750", "Physical performance test/FCE", 55.00),
+            ("29125", "Forearm splint application", 65.00),
+            ("29130", "Finger splint application", 45.00),
+            ("97112", "Neuromuscular re-education", 44.00),
+        ],
+        "provider_names": [
+            ("DAVIS", "MICHAEL", "OT"),
+            ("NAKAMURA", "KENJI", "OTR"),
+            ("BROOKS", "LISA", "OT"),
+            ("HOFFMAN", "ANNA", "OTR/L"),
+            ("GARCIA", "CARLOS", "OT"),
+        ],
+        "facility_names": [
+            "HARBOR OCCUPATIONAL HEALTH",
+            "FUNCTIONAL RESTORATION CENTER",
+            "HAND AND UPPER EXTREMITY CLINIC",
+            "WORK HARDENING AND CONDITIONING CTR",
+            "OCCUPATIONAL REHAB SPECIALISTS",
+            "CERTIFIED HAND THERAPY CENTER",
+        ],
+        "icd10_codes": [
+            ("S62009A", "Fracture of navicular bone of wrist, initial"),
+            ("S66011A", "Strain of flexor tendon of right thumb, initial"),
+            ("M79641", "Pain in right hand"),
+            ("S4300XA", "Dislocation of shoulder joint, initial"),
+            ("M7911", "Myalgia, right shoulder"),
+            ("G5600", "Carpal tunnel syndrome, unspecified"),
+            ("S63011A", "Subluxation of distal radioulnar joint, initial"),
+            ("M75110", "Rotator cuff tear, right shoulder"),
+            ("M7010", "Bursitis of knee"),
+        ],
+        "auth_service_types": [
+            ("OT", "Occupational Therapy", "3"),
+        ],
+        "place_of_service": [
+            ("11", "Office"),
+            ("49", "Independent Clinic"),
+        ],
+    },
+
+    "DC": {
+        "name": "Chiropractic",
+        "procedure_codes": [
+            ("98940", "Chiropractic manipulation 1-2 regions", 55.00),
+            ("98941", "Chiropractic manipulation 3-4 regions", 65.00),
+            ("98942", "Chiropractic manipulation 5 regions", 75.00),
+            ("97140", "Manual therapy techniques", 45.00),
+            ("97110", "Therapeutic exercises", 42.00),
+            ("97010", "Hot/cold pack application", 15.00),
+            ("97035", "Ultrasound therapy", 25.00),
+            ("97012", "Mechanical traction therapy", 30.00),
+            ("97014", "Electrical stimulation unattended", 20.00),
+            ("97032", "Electrical stimulation manual", 35.00),
+            ("97112", "Neuromuscular re-education", 44.00),
+        ],
+        "provider_names": [
+            ("WILLIAMS", "JAMES", "DC"),
+            ("PETERSON", "MARK", "DC"),
+            ("CHANG", "LISA", "DC"),
+            ("MURPHY", "BRIAN", "DC"),
+            ("FOSTER", "DIANE", "DC"),
+        ],
+        "facility_names": [
+            "VALLEY SPINE INSTITUTE",
+            "ADVANCED CHIROPRACTIC CENTER",
+            "SPINAL CARE AND REHABILITATION",
+            "TOTAL WELLNESS CHIROPRACTIC",
+            "APEX SPINE AND JOINT CLINIC",
+        ],
+        "icd10_codes": [
+            ("M5416", "Radiculopathy, lumbar region"),
+            ("M5412", "Radiculopathy, cervical region"),
+            ("M5136", "Intervertebral disc degeneration, lumbar"),
+            ("M5432", "Cervicalgia"),
+            ("M5442", "Lumbago with sciatica, left side"),
+            ("M545", "Low back pain"),
+            ("M9901", "Segmental and somatic dysfunction of cervical"),
+            ("M9903", "Segmental and somatic dysfunction of lumbar"),
+            ("G8929", "Other chronic pain"),
+        ],
+        "auth_service_types": [
+            ("DC", "Chiropractic", "3"),
+        ],
+        "place_of_service": [
+            ("11", "Office"),
+        ],
+    },
+
+    "DX": {
+        "name": "Diagnostics",
+        "procedure_codes": [
+            ("72148", "MRI lumbar spine w/o contrast", 475.00),
+            ("72141", "MRI cervical spine w/o contrast", 450.00),
+            ("73721", "MRI lower extremity joint w/o", 425.00),
+            ("73221", "MRI upper extremity joint w/o", 415.00),
+            ("72149", "MRI lumbar spine w/ contrast", 575.00),
+            ("73720", "MRI lower extremity w/o then w/", 650.00),
+            ("72131", "CT lumbar spine w/o contrast", 325.00),
+            ("72125", "CT cervical spine w/o contrast", 310.00),
+            ("73700", "CT lower extremity w/o contrast", 295.00),
+            ("73200", "CT upper extremity w/o contrast", 285.00),
+            ("73030", "X-ray shoulder 2+ views", 55.00),
+            ("73560", "X-ray knee 1-2 views", 45.00),
+            ("73110", "X-ray wrist 3+ views", 50.00),
+            ("72100", "X-ray lumbar spine 2-3 views", 65.00),
+            ("76882", "Ultrasound extremity, limited", 125.00),
+            ("76881", "Ultrasound extremity, complete", 175.00),
+            ("95907", "EMG nerve conduction 1-2 studies", 185.00),
+            ("95908", "EMG nerve conduction 3-4 studies", 250.00),
+            ("95909", "EMG nerve conduction 5-6 studies", 315.00),
+            ("95886", "Needle EMG each extremity", 195.00),
+            ("95885", "Needle EMG limited study", 145.00),
+        ],
+        "provider_names": [
+            ("MILLER", "DAVID", "MD"),
+            ("KIM", "SUSAN", "MD"),
+            ("RAMIREZ", "JORGE", "MD"),
+            ("WALSH", "KATHLEEN", "DO"),
+            ("SINGH", "RAJESH", "MD"),
+        ],
+        "facility_names": [
+            "ADVANCED IMAGING ASSOCIATES",
+            "PREMIER DIAGNOSTIC CENTER",
+            "REGIONAL MRI AND CT CENTER",
+            "OPEN MRI OF JACKSONVILLE",
+            "NEURODIAGNOSTIC ASSOCIATES",
+            "RADIOLOGY PARTNERS WC",
+            "OUTPATIENT IMAGING CENTER",
+        ],
+        "icd10_codes": [
+            ("M5416", "Radiculopathy, lumbar region"),
+            ("M5412", "Radiculopathy, cervical region"),
+            ("M5136", "Intervertebral disc degeneration, lumbar"),
+            ("M75110", "Rotator cuff tear, right shoulder"),
+            ("S83511A", "Sprain of ACL of right knee, initial"),
+            ("S8350XA", "Sprain of knee, unspecified, initial"),
+            ("G5600", "Carpal tunnel syndrome, unspecified"),
+            ("M7010", "Bursitis of knee"),
+            ("S4300XA", "Dislocation of shoulder joint, initial"),
+            ("M7911", "Myalgia, right shoulder"),
+            ("G8929", "Other chronic pain"),
+        ],
+        "auth_service_types": [
+            ("MR", "MRI", "1"),
+            ("DI", "Diagnostic Imaging", "1"),
+        ],
+        "place_of_service": [
+            ("22", "Outpatient Hospital"),
+            ("49", "Independent Clinic"),
+        ],
+    },
+
+    "DME": {
+        "name": "Durable Medical Equipment",
+        "procedure_codes": [
+            ("E0112", "Crutches, underarm, wood, pair", 45.00),
+            ("E0114", "Crutches, underarm, adjustable, pair", 55.00),
+            ("E0130", "Walker, rigid, adjustable", 85.00),
+            ("E0143", "Walker, folding, wheeled", 125.00),
+            ("E0601", "CPAP device", 450.00),
+            ("E0720", "TENS unit 2-lead", 120.00),
+            ("E0730", "TENS unit 4-lead", 150.00),
+            ("E0935", "Continuous passive motion device", 275.00),
+            ("E1390", "Oxygen concentrator", 325.00),
+            ("E0185", "Gel mattress overlay", 175.00),
+            ("L0631", "Lumbar support, prefabricated", 85.00),
+            ("L1832", "Knee orthosis, adjustable", 245.00),
+            ("L3808", "Wrist hand orthosis, rigid", 165.00),
+            ("L3916", "Ankle foot orthosis, rigid", 295.00),
+            ("L3960", "Shoulder elbow orthosis", 385.00),
+            ("A4556", "Electrodes for TENS per pair", 12.00),
+            ("A4558", "TENS unit supplies, 2-lead, per month", 35.00),
+            ("E0193", "Powered air flotation mattress", 475.00),
+            ("K0001", "Standard wheelchair", 350.00),
+            ("K0004", "High strength lightweight wheelchair", 850.00),
+        ],
+        "provider_names": [
+            ("ORTHOTECH", "SUPPLY", "DME"),
+            ("MEDLINE", "SERVICES", "DME"),
+            ("NATIONAL", "SEATING", "DME"),
+            ("PROSTHETIC", "SOLUTIONS", "CP"),
+        ],
+        "facility_names": [
+            "NATIONAL DME PROVIDERS",
+            "MEDICAL EQUIPMENT SPECIALISTS",
+            "REHAB TECHNOLOGY SOLUTIONS",
+            "PROSTHETIC AND ORTHOTIC CENTER",
+            "HOME MEDICAL SUPPLY CO",
+            "ADAPTIVE EQUIPMENT SERVICES",
+        ],
+        "icd10_codes": [
+            ("S8350XA", "Sprain of knee, unspecified, initial"),
+            ("M5416", "Radiculopathy, lumbar region"),
+            ("S62009A", "Fracture of navicular bone of wrist, initial"),
+            ("S93401A", "Sprain of ankle, initial encounter"),
+            ("M75110", "Rotator cuff tear, right shoulder"),
+            ("S4300XA", "Dislocation of shoulder joint, initial"),
+            ("G8929", "Other chronic pain"),
+            ("M7010", "Bursitis of knee"),
+        ],
+        "auth_service_types": [
+            ("DM", "Durable Medical Equipment", "1"),
+        ],
+        "place_of_service": [
+            ("12", "Home"),
+            ("49", "Independent Clinic"),
+        ],
+    },
+
+    "HH": {
+        "name": "Home Health / Complex Care",
+        "procedure_codes": [
+            ("99341", "Home visit new patient, low", 95.00),
+            ("99342", "Home visit new patient, moderate", 145.00),
+            ("99347", "Home visit established, low", 75.00),
+            ("99348", "Home visit established, moderate", 115.00),
+            ("99349", "Home visit established, high", 155.00),
+            ("99504", "Home visit nursing care, complex", 125.00),
+            ("99507", "Home visit for wound care", 110.00),
+            ("97110", "Therapeutic exercises (home PT)", 42.00),
+            ("97530", "Therapeutic activities (home OT)", 40.00),
+            ("S9123", "Nursing care in home per hour, RN", 85.00),
+            ("S9124", "Nursing care in home per hour, LPN", 55.00),
+            ("T1030", "Nursing care in home, per diem, RN", 450.00),
+            ("T1031", "Nursing care in home, per diem, LPN", 300.00),
+            ("G0299", "Skilled nursing services, home health", 65.00),
+            ("G0300", "Skilled nursing services, maintenance", 55.00),
+        ],
+        "provider_names": [
+            ("MARTINEZ", "ELENA", "RN"),
+            ("THOMPSON", "GRACE", "RN"),
+            ("WRIGHT", "JAMES", "LPN"),
+            ("BELL", "SANDRA", "RN"),
+            ("COLE", "PATRICK", "PT"),
+        ],
+        "facility_names": [
+            "HOME CARE NURSING SERVICES",
+            "COMPLEX CARE SOLUTIONS",
+            "VISITING HEALTH PROFESSIONALS",
+            "POST ACUTE CARE NETWORK",
+            "HOME REHABILITATION SERVICES",
+            "CATASTROPHIC CARE MANAGEMENT",
+        ],
+        "icd10_codes": [
+            ("S7200XA", "Fracture of head of femur, initial"),
+            ("G8929", "Other chronic pain"),
+            ("S1200XA", "Fracture of first cervical vertebra, initial"),
+            ("S3210XA", "Fracture of body of sternum, initial"),
+            ("T8430XA", "Infection following procedure, initial"),
+            ("S0600XA", "Concussion w/o loss of consciousness, initial"),
+            ("L97519", "Non-pressure chronic ulcer of lower leg"),
+            ("M5416", "Radiculopathy, lumbar region"),
+        ],
+        "auth_service_types": [
+            ("HH", "Home Health", "3"),
+            ("CC", "Complex Care", "3"),
+        ],
+        "place_of_service": [
+            ("12", "Home"),
+        ],
+    },
+
+    "DENTAL": {
+        "name": "Dental",
+        "procedure_codes": [
+            ("D0120", "Periodic oral evaluation", 45.00),
+            ("D0140", "Limited oral evaluation, problem focused", 65.00),
+            ("D0150", "Comprehensive oral evaluation", 85.00),
+            ("D0220", "Intraoral periapical first radiograph", 25.00),
+            ("D0230", "Intraoral periapical each additional", 18.00),
+            ("D0274", "Bitewing radiographs four images", 55.00),
+            ("D0330", "Panoramic radiograph", 95.00),
+            ("D2140", "Amalgam restoration one surface", 125.00),
+            ("D2150", "Amalgam restoration two surfaces", 155.00),
+            ("D2330", "Resin composite one surface anterior", 145.00),
+            ("D2740", "Crown porcelain/ceramic substrate", 850.00),
+            ("D2750", "Crown porcelain fused to metal", 795.00),
+            ("D3310", "Root canal anterior tooth", 475.00),
+            ("D3320", "Root canal premolar tooth", 575.00),
+            ("D3330", "Root canal molar tooth", 725.00),
+            ("D7140", "Extraction erupted tooth", 135.00),
+            ("D7210", "Surgical extraction", 225.00),
+            ("D7240", "Surgical extraction impacted tooth", 325.00),
+        ],
+        "provider_names": [
+            ("PARK", "ANDREW", "DDS"),
+            ("SHAW", "MELISSA", "DMD"),
+            ("RIVERA", "DANIEL", "DDS"),
+            ("TRAN", "LINDA", "DMD"),
+            ("WOOD", "CHARLES", "DDS"),
+        ],
+        "facility_names": [
+            "ONE CALL DENTAL NETWORK",
+            "WORKERS COMP DENTAL CENTER",
+            "OCCUPATIONAL DENTAL ASSOCIATES",
+            "PREMIER DENTAL CARE WC",
+            "INDUSTRIAL DENTAL CLINIC",
+        ],
+        "icd10_codes": [
+            ("S0250XA", "Fracture of tooth, initial encounter"),
+            ("K0889", "Other specified disorders of teeth"),
+            ("K0461", "Dental caries on pit and fissure surface"),
+            ("K0501", "Dental caries on root surface"),
+            ("S0351XA", "Fracture of alveolar process of mandible, initial"),
+            ("K0830", "Enamel erosion, unspecified"),
+            ("K0400", "Dental caries, enamel limited"),
+        ],
+        "auth_service_types": [
+            ("DN", "Dental", "1"),
+        ],
+        "place_of_service": [
+            ("11", "Office"),
+        ],
+    },
+
+    "TRANSPORT": {
+        "name": "Transportation",
+        "procedure_codes": [
+            ("A0100", "Non-emergency ambulance transport", 350.00),
+            ("A0120", "Non-emergency wheelchair van", 125.00),
+            ("A0130", "Non-emergency ambulance, wheelchair", 175.00),
+            ("A0160", "Non-emergency stretcher transport", 225.00),
+            ("A0170", "Transport ancillary, parking fees", 15.00),
+            ("A0180", "Transport ancillary, tolls", 10.00),
+            ("A0190", "Transport ancillary, per mile", 2.50),
+            ("A0200", "Transport ancillary, waiting time", 35.00),
+            ("T2003", "Non-emergency transport, encounter/trip", 65.00),
+            ("T2005", "Non-emergency transport, per mile", 2.00),
+            ("S0215", "Non-emergency transport, mileage per mile", 1.75),
+        ],
+        "provider_names": [
+            ("TRANSMED", "SERVICES", "EMT"),
+            ("PREMIER", "TRANSPORT", "EMT"),
+            ("METRO", "MEDICAL", "EMT"),
+            ("NATIONAL", "TRANSPORT", "EMT"),
+        ],
+        "facility_names": [
+            "MEDICAL TRANSPORT SERVICES",
+            "NON EMERGENCY TRANSPORT LLC",
+            "WORKERS COMP TRANSPORTATION",
+            "METRO MEDICAL TRANSPORT",
+            "ACCESSIBLE TRANSIT SERVICES",
+        ],
+        "icd10_codes": [
+            ("Z0289", "Encounter for other administrative examinations"),
+            ("M5416", "Radiculopathy, lumbar region"),
+            ("G8929", "Other chronic pain"),
+            ("S8350XA", "Sprain of knee, unspecified, initial"),
+            ("M75110", "Rotator cuff tear, right shoulder"),
+        ],
+        "auth_service_types": [
+            ("TR", "Transportation", "1"),
+        ],
+        "place_of_service": [
+            ("99", "Other Place of Service"),
+        ],
+    },
+
+    "LANGUAGE": {
+        "name": "Language / Interpreter Services",
+        "procedure_codes": [
+            ("T1013", "Interpreter services, per 15 minutes", 25.00),
+            ("T1012", "Interpreter services, per encounter", 85.00),
+            ("S9542", "Home infusion, sign language", 95.00),
+            ("T2048", "Behavioral health, translation", 45.00),
+        ],
+        "provider_names": [
+            ("LINGUISTIC", "SERVICES", "CI"),
+            ("CERTIFIED", "INTERPRETERS", "CI"),
+            ("MULTILINGUAL", "GROUP", "CI"),
+        ],
+        "facility_names": [
+            "LANGUAGE LINE SOLUTIONS",
+            "CERTIFIED INTERPRETER SERVICES",
+            "WORKERS COMP LANGUAGE SERVICES",
+            "MULTILINGUAL COMMUNICATION SVCS",
+        ],
+        "icd10_codes": [
+            ("Z0289", "Encounter for other administrative examinations"),
+            ("M5416", "Radiculopathy, lumbar region"),
+            ("G8929", "Other chronic pain"),
+        ],
+        "auth_service_types": [
+            ("LS", "Language Services", "1"),
+        ],
+        "place_of_service": [
+            ("11", "Office"),
+            ("22", "Outpatient Hospital"),
+        ],
+    },
+}
+
+# Active data pools — overridden when --lob is specified
+active_procedure_codes = PROCEDURE_CODES
+active_provider_names = PROVIDER_NAMES
+active_facility_names = FACILITY_NAMES
+active_icd10_codes = ICD10_CODES
+active_auth_service_types = AUTH_SERVICE_TYPES
+active_place_of_service = PLACE_OF_SERVICE
+
+
+def apply_lob(lob_name):
+    """Override the active data pools with LOB-specific data."""
+    global active_procedure_codes, active_provider_names, active_facility_names
+    global active_icd10_codes, active_auth_service_types, active_place_of_service
+
+    if lob_name is None:
+        return
+
+    lob_key = lob_name.upper()
+    if lob_key not in LOB_PROFILES:
+        valid = ", ".join(sorted(LOB_PROFILES.keys()))
+        raise ValueError(f"Unknown LOB: {lob_name}. Valid options: {valid}")
+
+    profile = LOB_PROFILES[lob_key]
+    active_procedure_codes = profile["procedure_codes"]
+    active_provider_names = profile["provider_names"]
+    active_facility_names = profile["facility_names"]
+    active_icd10_codes = profile["icd10_codes"]
+    active_auth_service_types = profile["auth_service_types"]
+    active_place_of_service = profile["place_of_service"]
+
+
+# ---------------------------------------------------------------------------
 # EDI Builder
 # ---------------------------------------------------------------------------
 
@@ -306,7 +825,7 @@ def generate_837p(num_claims=None):
     """Generate a professional health care claim (837P)."""
     num_claims = num_claims or random.randint(3, 10)
 
-    submitter_name = random.choice(FACILITY_NAMES)
+    submitter_name = random.choice(active_facility_names)
     payer_name, payer_id = random.choice(PAYER_NAMES)
     mco = random.choice(MANAGED_CARE_ORGS)
 
@@ -327,7 +846,7 @@ def generate_837p(num_claims=None):
     segments.append(("NM1", "40", "2", payer_name, "", "", "", "", "46", payer_id))
 
     # -- Billing Provider HL
-    billing_provider = random.choice(PROVIDER_NAMES)
+    billing_provider = random.choice(active_provider_names)
     billing_npi = npi()
     billing_tin = tax_id()
     billing_addr = random.choice(ADDRESSES)
@@ -348,7 +867,7 @@ def generate_837p(num_claims=None):
         patient = random.choice(PATIENT_NAMES)
         patient_member_id = member_id()
         patient_addr = random.choice(ADDRESSES)
-        pos_code, pos_name = random.choice(PLACE_OF_SERVICE)
+        pos_code, pos_name = random.choice(active_place_of_service)
 
         # -- Subscriber HL
         hl_id += 1
@@ -369,13 +888,14 @@ def generate_837p(num_claims=None):
 
         # -- Claim Loop (2300)
         claim_ctrl = claim_id()
-        diag_codes = random.sample(ICD10_CODES, random.randint(1, 3))
+        diag_codes = random.sample(active_icd10_codes,
+                                   min(random.randint(1, 3), len(active_icd10_codes)))
         service_date = datetime.now() - timedelta(days=random.randint(1, 30))
         total_charge = 0.0
 
         # Select procedures
-        num_svc_lines = random.randint(1, 4)
-        procedures = random.sample(PROCEDURE_CODES, num_svc_lines)
+        num_svc_lines = min(random.randint(1, 4), len(active_procedure_codes))
+        procedures = random.sample(active_procedure_codes, num_svc_lines)
 
         for cpt, desc, price in procedures:
             total_charge += price
@@ -452,7 +972,7 @@ def generate_835(num_claims=None):
                      f"800{random.randint(1000000,9999999)}"))
 
     # -- Loop 1000B: Payee (Provider)
-    payee_facility = random.choice(FACILITY_NAMES)
+    payee_facility = random.choice(active_facility_names)
     payee_npi = npi()
     payee_addr = random.choice(ADDRESSES)
     segments.append(("N1", "PE", payee_facility, "XX", payee_npi))
@@ -464,8 +984,8 @@ def generate_835(num_claims=None):
     for _ in range(num_claims):
         patient = random.choice(PATIENT_NAMES)
         clm_ctrl = claim_id()
-        num_lines = random.randint(1, 3)
-        procedures = random.sample(PROCEDURE_CODES, num_lines)
+        num_lines = min(random.randint(1, 3), len(active_procedure_codes))
+        procedures = random.sample(active_procedure_codes, num_lines)
         service_date = pay_date - timedelta(days=random.randint(15, 60))
 
         # Compute charges and payments
@@ -532,7 +1052,7 @@ def generate_270(num_claims=None):
     num_subscribers = num_claims or random.randint(3, 10)
 
     payer_name, payer_id = random.choice(PAYER_NAMES)
-    facility = random.choice(FACILITY_NAMES)
+    facility = random.choice(active_facility_names)
     provider_npi = npi()
 
     segments = []
@@ -607,7 +1127,7 @@ def generate_271(num_claims=None):
     num_subscribers = num_claims or random.randint(3, 10)
 
     payer_name, payer_id = random.choice(PAYER_NAMES)
-    facility = random.choice(FACILITY_NAMES)
+    facility = random.choice(active_facility_names)
     provider_npi = npi()
 
     plan_names = [
@@ -745,7 +1265,7 @@ def generate_278(num_claims=None):
 
     payer_name, payer_id = random.choice(PAYER_NAMES)
     mco_name, mco_code, mco_npi = random.choice(MANAGED_CARE_ORGS)
-    facility = random.choice(FACILITY_NAMES)
+    facility = random.choice(active_facility_names)
 
     # Review types: HS=Health Services, SC=Specialty Care, AR=Admission Review
     review_types = ["HS", "SC", "AR"]
@@ -768,10 +1288,10 @@ def generate_278(num_claims=None):
 
     for _ in range(num_requests):
         patient = random.choice(PATIENT_NAMES)
-        provider = random.choice(PROVIDER_NAMES)
+        provider = random.choice(active_provider_names)
         provider_npi_val = npi()
         addr = random.choice(ADDRESSES)
-        svc_type_code, svc_type_name, default_qty = random.choice(AUTH_SERVICE_TYPES)
+        svc_type_code, svc_type_name, default_qty = random.choice(active_auth_service_types)
 
         # HL - Requester (Provider) — each request may come from a different provider
         hl_id += 1
@@ -807,11 +1327,12 @@ def generate_278(num_claims=None):
         # UM - Health Care Services Review Information
         review_type = random.choice(review_types)
         cert_type = random.choice(cert_types)
-        pos_code = random.choice(PLACE_OF_SERVICE)[0]
+        pos_code = random.choice(active_place_of_service)[0]
         segments.append(("UM", review_type, cert_type, "", pos_code))
 
         # HI - Diagnosis (1-3 codes)
-        diag_codes = random.sample(ICD10_CODES, random.randint(1, 3))
+        diag_codes = random.sample(active_icd10_codes,
+                                   min(random.randint(1, 3), len(active_icd10_codes)))
         hi_elements = ["BK:" + diag_codes[0][0]]
         for code, desc in diag_codes[1:]:
             hi_elements.append("BF:" + code)
@@ -834,8 +1355,8 @@ def generate_278(num_claims=None):
             segments.append(("REF", "BB", prev_auth))
 
         # SV1 - Service lines (1-3 procedures per request)
-        num_svc = random.randint(1, 3)
-        procedures = random.sample(PROCEDURE_CODES, num_svc)
+        num_svc = min(random.randint(1, 3), len(active_procedure_codes))
+        procedures = random.sample(active_procedure_codes, num_svc)
         for proc_cpt, proc_desc, proc_price in procedures:
             qty = random.randint(1, num_visits)
             segments.append(("SV1", f"HC:{proc_cpt}", f"{proc_price:.2f}",
@@ -855,7 +1376,7 @@ def generate_999(num_claims=None):
     num_txns = num_claims or random.randint(5, 15)
 
     sender = random.choice(PAYER_NAMES)
-    receiver_facility = random.choice(FACILITY_NAMES)
+    receiver_facility = random.choice(active_facility_names)
     orig_gs_control = control_number(4)
 
     # Acknowledge a random healthcare transaction type
@@ -982,6 +1503,8 @@ def main():
     all_types = list(GENERATORS.keys())
     choices = all_types + ["all"]
 
+    lob_choices = sorted(LOB_PROFILES.keys())
+
     parser = argparse.ArgumentParser(
         description="Generate sample healthcare EDI X12 5010 files for testing.",
         formatter_class=argparse.RawDescriptionHelpFormatter,
@@ -995,6 +1518,21 @@ Supported transaction types:
   999   Implementation Acknowledgment
   all   Generate one of each type
 
+Lines of business (--lob):
+  PT        Physical Therapy
+  OT        Occupational Therapy
+  DC        Chiropractic
+  DX        Diagnostics (MRI, CT, X-ray, EMG/NCS)
+  DME       Durable Medical Equipment
+  HH        Home Health / Complex Care
+  DENTAL    Dental
+  TRANSPORT Transportation
+  LANGUAGE  Language / Interpreter Services
+
+  When --lob is specified, CPT codes, providers, facilities, diagnoses,
+  and auth service types are constrained to that line of business.
+  Based on One Call Care Management's service lines.
+
 Context:
   These are the EDI transaction types that flow between insurance payers,
   managed care organizations (e.g. One Call), and healthcare providers in
@@ -1004,7 +1542,9 @@ Examples:
   %(prog)s --type 837P
   %(prog)s --type 835 --output remittance.edi --claims 5
   %(prog)s --type 278 --pretty
+  %(prog)s --type 278 --lob PT --claims 10 --pretty
   %(prog)s --type all --output-dir ./samples
+  %(prog)s --type all --lob DX --output-dir ./dx_samples
         """,
     )
     parser.add_argument(
@@ -1031,11 +1571,18 @@ Examples:
         "--seed", "-s", type=int,
         help="Random seed for reproducible output.",
     )
+    parser.add_argument(
+        "--lob", "-l",
+        choices=lob_choices, type=str.upper,
+        help="Limit data to a One Call line of business (e.g. PT, DX, DME).",
+    )
 
     args = parser.parse_args()
 
     if args.seed is not None:
         random.seed(args.seed)
+
+    apply_lob(args.lob)
 
     if args.type == "all":
         output_dir = args.output_dir or "."

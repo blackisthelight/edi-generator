@@ -20,6 +20,9 @@ python3 edi_generator.py --type all --output-dir ./samples
 
 # Reproducible output
 python3 edi_generator.py --type 271 --seed 42 --pretty
+
+# Limit to a specific One Call line of business
+python3 edi_generator.py --type 837P --lob PT --claims 10 --pretty
 ```
 
 No dependencies required — pure Python 3 standard library.
@@ -53,6 +56,7 @@ python3 edi_generator.py [OPTIONS]
 | `--claims N` | `-n` | Number of claims/subscribers/records to include |
 | `--pretty` | `-p` | Add newlines between segments for readability |
 | `--seed N` | `-s` | Random seed for reproducible output |
+| `--lob NAME` | `-l` | Limit data to a One Call line of business (see section below) |
 
 ---
 
@@ -88,6 +92,60 @@ python3 edi_generator.py --type all --claims 100 --output-dir ./large_samples
 
 There is no upper limit on `--claims`. The tool can generate files with thousands
 of records if needed, limited only by memory.
+
+---
+
+## Filtering by Line of Business (the `--lob` flag)
+
+Use `--lob` / `-l` to constrain generated data to a specific One Call Care
+Management line of business. When active, CPT/HCPCS codes, provider names,
+facility names, ICD-10 diagnoses, auth service types, and place of service codes
+are all scoped to that LOB.
+
+| LOB | Name | What It Generates |
+|-----|------|-------------------|
+| `PT` | Physical Therapy | Therapeutic exercises, manual therapy, gait training, aquatic therapy, work hardening |
+| `OT` | Occupational Therapy | ADL training, work reintegration, splinting, hand therapy, FCE |
+| `DC` | Chiropractic | Spinal manipulation (1-5 regions), traction, e-stim, therapeutic exercises |
+| `DX` | Diagnostics | MRI, CT, X-ray, ultrasound, EMG/NCS studies |
+| `DME` | Durable Medical Equipment | TENS units, walkers, wheelchairs, orthotics, CPAP, oxygen |
+| `HH` | Home Health / Complex Care | Home visits (RN/LPN), wound care, home PT/OT, nursing per diem |
+| `DENTAL` | Dental | Evaluations, radiographs, restorations, crowns, root canals, extractions |
+| `TRANSPORT` | Transportation | Non-emergency ambulance, wheelchair van, mileage, waiting time |
+| `LANGUAGE` | Language / Interpreter | Interpreter services (per 15 min or per encounter), translation |
+
+### Examples
+
+```bash
+# PT-only claims with specific provider/facility/CPT data
+python3 edi_generator.py --type 837P --lob PT --claims 10 --pretty
+
+# Diagnostics auth requests (MRI, CT, EMG)
+python3 edi_generator.py --type 278 --lob DX --claims 5 --pretty
+
+# DME remittance advice
+python3 edi_generator.py --type 835 --lob DME --claims 20 --output dme_remittance.edi
+
+# All types scoped to chiropractic
+python3 edi_generator.py --type all --lob DC --output-dir ./dc_samples
+
+# Combine with --seed for reproducibility
+python3 edi_generator.py --type 278 --lob PT --claims 3 --seed 42 --pretty
+```
+
+Without `--lob`, the generator uses the full cross-LOB data pool (all CPT codes,
+all provider types, etc.), which is the default behavior.
+
+### What `--lob` constrains
+
+| Data Pool | Without `--lob` | With `--lob PT` (example) |
+|-----------|-----------------|---------------------------|
+| CPT codes | All 18 (office visits, PT, OT, MRI, surgery, chiro) | PT-specific (97110, 97140, 97530, 97113, etc.) |
+| Providers | MD, DO, DC, PT, OT, DPM, PhD | PT, DPT only |
+| Facilities | Ortho centers, imaging, surgical centers | PT clinics, aquatic therapy, work hardening |
+| ICD-10 | Full range of WC diagnoses | MSK diagnoses common in PT referrals |
+| Auth types | PT, OT, MRI, surgery, pain mgmt, chiro, imaging | PT only |
+| Place of service | Office, outpatient, ASC, clinic | Office, independent clinic |
 
 ---
 

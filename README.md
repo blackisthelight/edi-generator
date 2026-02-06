@@ -15,6 +15,9 @@ python3 edi_generator.py --type 835 --claims 50 --output remittance.edi
 
 # Generate all 6 transaction types at once
 python3 edi_generator.py --type all --output-dir ./samples
+
+# Limit to a specific One Call line of business
+python3 edi_generator.py --type 837P --lob PT --claims 10 --pretty
 ```
 
 ## Supported Transaction Types
@@ -42,6 +45,7 @@ python3 edi_generator.py [OPTIONS]
 | `--output-dir DIR` | `-d` | Output directory for `--type all` |
 | `--pretty` | `-p` | Newlines between segments for readability |
 | `--seed N` | `-s` | Random seed for reproducible output |
+| `--lob NAME` | `-l` | Limit to a One Call line of business (see below) |
 
 ## Generating Beefy Files
 
@@ -66,6 +70,35 @@ python3 edi_generator.py --type all --claims 100 --output-dir ./test_data
 | 2 | ~1 KB | ~1 KB | ~0.5 KB | ~2 KB | ~1 KB | ~0.3 KB |
 | 50 | ~22 KB | ~15 KB | ~7 KB | ~35 KB | ~23 KB | ~2.5 KB |
 | 500 | ~216 KB | ~151 KB | ~60 KB | ~311 KB | ~230 KB | ~25 KB |
+
+## Filtering by Line of Business
+
+Use `--lob` to constrain CPT codes, providers, facilities, diagnoses, and auth service types to a specific One Call Care Management line of business:
+
+| LOB | Name | Example Procedures |
+|-----|------|-------------------|
+| `PT` | Physical Therapy | 97110, 97140, 97530, 97113 (aquatic), 97750 (FCE) |
+| `OT` | Occupational Therapy | 97530, 97535, 97537, 29125 (splinting), 97750 (FCE) |
+| `DC` | Chiropractic | 98940, 98941, 98942, 97012 (traction), 97014 (e-stim) |
+| `DX` | Diagnostics | 72148 (MRI), 72131 (CT), 73560 (X-ray), 95907 (EMG/NCS) |
+| `DME` | Durable Medical Equipment | E0720 (TENS), L1832 (knee orthosis), K0001 (wheelchair) |
+| `HH` | Home Health / Complex Care | 99341 (home visit), S9123 (RN), T1030 (nursing per diem) |
+| `DENTAL` | Dental | D2740 (crown), D3310 (root canal), D7140 (extraction) |
+| `TRANSPORT` | Transportation | A0100 (ambulance), A0120 (wheelchair van), T2003 (per trip) |
+| `LANGUAGE` | Language / Interpreter | T1013 (per 15 min), T1012 (per encounter) |
+
+```bash
+# PT-only claims
+python3 edi_generator.py --type 837P --lob PT --claims 10 --pretty
+
+# Diagnostics auth requests
+python3 edi_generator.py --type 278 --lob DX --claims 5 --pretty
+
+# All types, scoped to DME
+python3 edi_generator.py --type all --lob DME --output-dir ./dme_samples
+```
+
+Without `--lob`, the generator uses the full cross-LOB data pool.
 
 ## Sample Data
 
