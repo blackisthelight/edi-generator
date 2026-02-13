@@ -16,7 +16,7 @@ python3 edi_generator.py --type 835 --claims 50 --output remittance.edi
 # Generate all 6 transaction types at once
 python3 edi_generator.py --type all --output-dir ./samples
 
-# Limit to a specific One Call line of business
+# Limit to a specific line of business
 python3 edi_generator.py --type 837P --lob PT --claims 10 --pretty
 ```
 
@@ -45,7 +45,7 @@ python3 edi_generator.py [OPTIONS]
 | `--output-dir DIR` | `-d` | Output directory for `--type all` |
 | `--pretty` | `-p` | Newlines between segments for readability |
 | `--seed N` | `-s` | Random seed for reproducible output |
-| `--lob NAME` | `-l` | Limit to a One Call line of business (see below) |
+| `--lob NAME` | `-l` | Limit to a specific line of business (see below) |
 
 ## Generating Beefy Files
 
@@ -73,7 +73,7 @@ python3 edi_generator.py --type all --claims 100 --output-dir ./test_data
 
 ## Filtering by Line of Business
 
-Use `--lob` to constrain CPT codes, providers, facilities, diagnoses, and auth service types to a specific One Call Care Management line of business:
+Use `--lob` to constrain CPT codes, providers, facilities, diagnoses, and auth service types to a specific line of business:
 
 | LOB | Name | Example Procedures |
 |-----|------|-------------------|
@@ -106,7 +106,7 @@ The generator uses randomized but realistic data appropriate for workers' compen
 
 **Payers:** Travelers, Hartford Financial, Liberty Mutual, Sedgwick CMS, Gallagher Bassett, Zurich, Employers Holdings
 
-**Managed Care Orgs:** One Call Care Management, Coventry WC, CorVel Corporation, First Health Network
+**Managed Care Orgs:** Acme Managed Care, Coventry WC, CorVel Corporation, First Health Network
 
 **Providers:** MD, DO, DC, PT, OT, DPM, PhD specialists at orthopedic centers, rehab clinics, imaging centers, surgical centers
 

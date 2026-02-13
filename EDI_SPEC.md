@@ -642,7 +642,7 @@ for eb_segment in subscriber_ebs:
 
 ## 10. Transaction Type: 278 (Authorization Request)
 
-**Direction:** Provider → MCO (e.g., One Call)
+**Direction:** Provider → MCO
 
 ### Loop structure
 
