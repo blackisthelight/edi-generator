@@ -6,7 +6,7 @@ Generates sample HIPAA-compliant EDI X12 transaction sets for testing and
 development in the healthcare / workers' compensation managed care domain.
 
 Modeled after the types of EDI files that flow between insurance payers,
-managed care organizations (like One Call), and healthcare providers.
+managed care organizations (MCOs), and healthcare providers.
 
 Supported transaction types:
   837P  Health Care Claim - Professional (provider -> payer/MCO)
@@ -90,7 +90,7 @@ PAYER_NAMES = [
 ]
 
 MANAGED_CARE_ORGS = [
-    ("ONE CALL CARE MANAGEMENT", "ONECALL", "1234567890"),
+    ("ACME MANAGED CARE", "ACMEMC", "1234567890"),
     ("COVENTRY WC", "COVWC", "2345678901"),
     ("CORVEL CORPORATION", "CORVEL", "3456789012"),
     ("FIRST HEALTH NETWORK", "FHNET", "4567890123"),
@@ -275,13 +275,13 @@ AUTH_SERVICE_TYPES = [
 
 
 # ---------------------------------------------------------------------------
-# One Call Care Management — Line of Business (LOB) profiles
+# Line of Business (LOB) profiles
 #
 # Each LOB constrains the CPT codes, provider types, facility names,
 # ICD-10 codes, and auth service types to those consistent with that
 # line of business.  Use --lob <name> to activate.
 #
-# LOBs based on One Call's service lines:
+# Available LOBs:
 #   PT        Physical Therapy (incl. aqua, hand therapy, work hardening)
 #   OT        Occupational Therapy
 #   DC        Chiropractic
@@ -662,7 +662,7 @@ LOB_PROFILES = {
             ("WOOD", "CHARLES", "DDS"),
         ],
         "facility_names": [
-            "ONE CALL DENTAL NETWORK",
+            "NETWORK DENTAL SERVICES",
             "WORKERS COMP DENTAL CENTER",
             "OCCUPATIONAL DENTAL ASSOCIATES",
             "PREMIER DENTAL CARE WC",
@@ -1599,11 +1599,9 @@ Lines of business (--lob):
 
   When --lob is specified, CPT codes, providers, facilities, diagnoses,
   and auth service types are constrained to that line of business.
-  Based on One Call Care Management's service lines.
-
 Context:
   These are the EDI transaction types that flow between insurance payers,
-  managed care organizations (e.g. One Call), and healthcare providers in
+  managed care organizations (MCOs), and healthcare providers in
   workers' compensation and healthcare claim processing.
 
 Examples:
@@ -1642,7 +1640,7 @@ Examples:
     parser.add_argument(
         "--lob", "-l",
         choices=lob_choices, type=str.upper,
-        help="Limit data to a One Call line of business (e.g. PT, DX, DME).",
+        help="Limit data to a specific line of business (e.g. PT, DX, DME).",
     )
 
     args = parser.parse_args()

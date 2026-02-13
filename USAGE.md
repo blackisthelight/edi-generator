@@ -21,7 +21,7 @@ python3 edi_generator.py --type all --output-dir ./samples
 # Reproducible output
 python3 edi_generator.py --type 271 --seed 42 --pretty
 
-# Limit to a specific One Call line of business
+# Limit to a specific line of business
 python3 edi_generator.py --type 837P --lob PT --claims 10 --pretty
 ```
 
@@ -56,7 +56,7 @@ python3 edi_generator.py [OPTIONS]
 | `--claims N` | `-n` | Number of claims/subscribers/records to include |
 | `--pretty` | `-p` | Add newlines between segments for readability |
 | `--seed N` | `-s` | Random seed for reproducible output |
-| `--lob NAME` | `-l` | Limit data to a One Call line of business (see section below) |
+| `--lob NAME` | `-l` | Limit data to a specific line of business (see section below) |
 
 ---
 
@@ -97,8 +97,8 @@ of records if needed, limited only by memory.
 
 ## Filtering by Line of Business (the `--lob` flag)
 
-Use `--lob` / `-l` to constrain generated data to a specific One Call Care
-Management line of business. When active, CPT/HCPCS codes, provider names,
+Use `--lob` / `-l` to constrain generated data to a specific line of business.
+When active, CPT/HCPCS codes, provider names,
 facility names, ICD-10 diagnoses, auth service types, and place of service codes
 are all scoped to that LOB.
 
@@ -236,7 +236,7 @@ compensation managed care:
 **Payers**: Travelers, Hartford Financial, Liberty Mutual, Sedgwick CMS,
 Gallagher Bassett, Zurich, Employers Holdings
 
-**Managed Care Orgs**: One Call Care Management, Coventry WC, CorVel Corporation,
+**Managed Care Orgs**: Acme Managed Care, Coventry WC, CorVel Corporation,
 First Health Network
 
 **Providers**: MD, DO, DC, PT, OT, DPM, PhD specialists at facilities like
